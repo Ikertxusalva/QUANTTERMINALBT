@@ -42,9 +42,58 @@ const WEEK = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
 const short = (c: number) => money(c, { sign: true, whole: Math.abs(c) % 100 === 0 });
 
 /** Month of P&L by day, with each week's total on the right. */
+/** "+1.2k", "−340": a day's result in the width of a phone cell. */
+function compact(c: number) {
+  const a = Math.abs(c) / 100;
+  const body = a >= 10000 ? `${Math.round(a / 1000)}k` : a >= 1000 ? `${(a / 1000).toFixed(1)}k` : String(Math.round(a));
+  return `${c < 0 ? "−" : "+"}${body}`;
+}
+
+function CalendarCompact({ weeks, band }: { weeks: CalendarWeek[]; band: number }) {
+  const weekend = weeks.some((w) => w.days.slice(5).some((d) => d.stat));
+  const cols = weekend ? 7 : 5;
+  return (
+    <div className="md:hidden">
+      <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+        {WEEK.slice(0, cols).map((d) => <div key={d} className="eyebrow pb-1 text-center !text-[10px]">{d}</div>)}
+      </div>
+      <div className="space-y-3">
+        {weeks.filter((w) => w.days.slice(0, cols).some((d) => d.inMonth)).map((w) => (
+          <div key={w.days[0].date}>
+            <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+              {w.days.slice(0, cols).map((d) => (
+                <Link
+                  key={d.date}
+                  href={`/days/${d.date}`}
+                  className={`flex h-[58px] flex-col justify-between rounded-[12px] p-2 ${d.stat ? "well" : ""} ${d.inMonth ? "" : "pointer-events-none opacity-30"}`}
+                >
+                  <span className="text-[12px] font-semibold">{Number(d.date.slice(8))}</span>
+                  {d.stat && (
+                    <span className={`num truncate text-[13px] font-semibold ${d.stat.net > band ? "text-up" : d.stat.net < -band ? "text-down" : "text-tx-2"}`}>
+                      {compact(d.stat.net)}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+            {w.traded > 0 && (
+              <div className="mt-1.5 flex items-center justify-between px-1">
+                <span className="font-mono text-[11px] text-tx-3">{w.green}/{w.traded} en verde</span>
+                <span className={`num text-[13px] font-semibold ${w.net >= 0 ? "text-up" : "text-down"}`}>{short(w.net)}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Calendar({ weeks, band = 0 }: { weeks: CalendarWeek[]; band?: number }) {
   return (
-    <div className="overflow-x-auto">
+    <>
+    <CalendarCompact weeks={weeks} band={band} />
+    <div className="hidden overflow-x-auto md:block">
       <div className="min-w-[760px]">
         <div className="grid grid-cols-[repeat(5,minmax(0,1fr))_56px_56px_112px] gap-2">
           {WEEK.map((d) => (
@@ -100,6 +149,7 @@ export function Calendar({ weeks, band = 0 }: { weeks: CalendarWeek[]; band?: nu
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -111,8 +161,44 @@ export function EdgeRows({ rows, measure, hrefFor }: { rows: GroupRow[]; measure
   const max = Math.max(...rows.map((r) => Math.abs(value(r))), 1e-9);
   const best = rows.reduce<GroupRow | null>((m, r) => (!m || value(r) > value(m) ? r : m), null);
   if (rows.length === 0) return <p className="py-6 text-tx-3">Sin trades en este grupo.</p>;
+  const shown = (r: GroupRow) => (measure === "net" ? money(r.net, { sign: true }) : measure === "win" ? pct(r.winRate) : rr(r.rPerTrade));
   return (
-    <div className="overflow-x-auto">
+    <>
+    {/* Phone: one block per group instead of a six-column table. */}
+    <div className="divide-y divide-line md:hidden">
+      {rows.map((r) => {
+        const v = value(r);
+        const body = (
+          <>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="min-w-0 truncate">
+                <span className="text-[16px] font-semibold">{r.label}</span>
+                <span className="ml-2 font-mono text-[12px] text-tx-3">n={r.n}</span>
+                {r.small && <span className="chip ml-2 font-mono uppercase">poco</span>}
+              </span>
+              <span className={`num shrink-0 text-[16px] font-semibold ${v < 0 ? "text-down" : "text-up"}`}>{shown(r)}</span>
+            </div>
+            <span
+              className="mt-2 block h-2.5 rounded-full"
+              style={{
+                width: `${Math.max(3, (Math.abs(v) / max) * 100)}%`,
+                background: v < 0 ? "#1c1c1c" : r === best ? "#f4f4f4" : "#3a3a3a",
+                border: v < 0 ? "1px solid rgb(255 255 255 / 0.12)" : undefined,
+              }}
+            />
+            <div className="num mt-2 text-[12.5px] text-tx-3">
+              {pct(r.winRate)} aciertos · {rr(r.rPerTrade)} / trade{measure !== "net" && ` · ${money(r.net, { sign: true })}`}
+            </div>
+          </>
+        );
+        return hrefFor ? (
+          <Link key={r.label} href={hrefFor(r)} className="block py-3.5">{body}</Link>
+        ) : (
+          <div key={r.label} className="py-3.5">{body}</div>
+        );
+      })}
+    </div>
+    <div className="hidden overflow-x-auto md:block">
       <table className="t w-full min-w-[720px]">
         <thead>
           <tr>
@@ -164,6 +250,7 @@ export function EdgeRows({ rows, measure, hrefFor }: { rows: GroupRow[]; measure
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 

@@ -158,7 +158,7 @@ export default async function StatsPage(props: PageProps<"/stats">) {
               {m.rCount === 0 ? (
                 <p className="text-tx-3">Anota el riesgo (1R) en tus trades para ver cómo se reparten.</p>
               ) : (
-                <div className="flex h-[190px] items-end gap-2">
+                <div className="overflow-x-auto"><div className="flex h-[190px] min-w-[430px] items-end gap-2">
                   {rd.map((b) => (
                     <div key={b.label} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
                       <span className="num text-[12px] text-tx-2">{b.n || ""}</span>
@@ -166,7 +166,7 @@ export default async function StatsPage(props: PageProps<"/stats">) {
                       <span className="h-8 text-center font-mono text-[9.5px] leading-tight text-tx-3">{b.label}</span>
                     </div>
                   ))}
-                </div>
+                </div></div>
               )}
             </section>
           </div>

@@ -52,7 +52,7 @@ export default async function DayPage(props: PageProps<"/days/[date]">) {
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="h1 capitalize">{fmt.format(new Date(`${date}T00:00:00Z`))}</h1>
+          <h1 className="h1 first-letter:uppercase">{fmt.format(new Date(`${date}T00:00:00Z`))}</h1>
           <p className="mt-2 text-tx-3">
             {trades.length === 0 ? "Sin trades este día" : `${trades.length} ${trades.length === 1 ? "trade" : "trades"} · ${onPlan} dentro del plan`}
           </p>

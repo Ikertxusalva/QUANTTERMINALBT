@@ -57,7 +57,7 @@ export default async function DaysPage(props: PageProps<"/days">) {
               const p = planned.get(d);
               return (
                 <Link key={d} href={`/days/${d}`} className="flex flex-wrap items-center gap-3 py-3.5 hover:bg-raised/50">
-                  <span className="w-[230px] text-[15px] font-semibold capitalize">{longDate(d)}</span>
+                  <span className="w-[230px] text-[15px] font-semibold first-letter:uppercase">{longDate(d)}</span>
                   <span className={`chip ${hasPlan(d) ? "chip-solid" : "border-dashed"}`}>{hasPlan(d) ? "Planificado" : "Sin plan"}</span>
                   <span className={`chip ${isReviewed(d) ? "" : "border-dashed"}`}>{p?.verdict ? VERDICT[p.verdict] : isReviewed(d) ? "Revisado" : "Sin revisar"}</span>
                   <span className="flex-1 text-right text-[13px] text-tx-3">{s ? `${s.trades} ${s.trades === 1 ? "trade" : "trades"}` : "Sin trades"}{scope ? "" : " · todas las cuentas"}</span>

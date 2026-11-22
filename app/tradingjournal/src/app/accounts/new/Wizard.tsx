@@ -261,7 +261,7 @@ export function Wizard() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <div>
+      <div className="min-w-0">
         <ol className="mb-5 flex flex-wrap gap-2">
           {STEPS.map((s, i) => (
             <li
@@ -285,7 +285,7 @@ export function Wizard() {
               />
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {firms.map((f) => (
-                  <button key={f.id} className="btn h-auto justify-between py-3" onClick={() => pickFirm(f.id)}>
+                  <button key={f.id} className="btn h-auto !whitespace-normal text-left justify-between py-3" onClick={() => pickFirm(f.id)}>
                     <span>{f.name}</span>
                     <span className="text-[12px] text-tx-3">{f.plans.length} planes</span>
                   </button>
@@ -293,11 +293,11 @@ export function Wizard() {
               </div>
               {firms.length === 0 && <p className="mt-3 text-tx-3">Ninguna firma con ese nombre en los presets.</p>}
               <div className="mt-5 grid gap-2 border-t border-line pt-5 sm:grid-cols-2">
-                <button className="btn h-auto flex-col items-start py-3" onClick={() => pickOther("manual")}>
+                <button className="btn h-auto !whitespace-normal text-left flex-col items-start py-3" onClick={() => pickOther("manual")}>
                   <span>Añadir firma a mano</span>
                   <span className="text-[12px] font-normal text-tx-3">Una cuenta de prop firm con sus reglas escritas por ti</span>
                 </button>
-                <button className="btn h-auto flex-col items-start py-3" onClick={() => pickOther("personal")}>
+                <button className="btn h-auto !whitespace-normal text-left flex-col items-start py-3" onClick={() => pickOther("personal")}>
                   <span>Cuenta personal</span>
                   <span className="text-[12px] font-normal text-tx-3">Tu propio dinero, con tus propios límites</span>
                 </button>
