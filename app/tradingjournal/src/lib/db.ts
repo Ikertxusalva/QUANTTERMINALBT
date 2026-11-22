@@ -123,7 +123,16 @@ async function connect(): Promise<Runner> {
     const { default: postgres } = await import("postgres");
     // prepare: false because Supabase's pooler (transaction mode) cannot keep prepared statements.
     const max = Number(process.env.PG_POOL_MAX) || 3;
-    const sql = postgres(url, { prepare: false, max, idle_timeout: 20, onnotice: () => {} });
+    const sql = postgres(url, {
+      prepare: false,
+      max,
+      // Supabase's pooler hangs on pipelined queries in transaction mode: one query in
+      // flight per connection, and a time limit so a stalled query fails instead of hanging.
+      max_pipeline: 1,
+      query_timeout: 15,
+      idle_timeout: 20,
+      onnotice: () => {},
+    });
     // Several statements in one go need the simple protocol.
     await sql.unsafe(SCHEMA).simple();
     return async (text, params = []) => {
