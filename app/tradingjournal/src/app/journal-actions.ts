@@ -94,7 +94,7 @@ export async function runImport(_prev: ImportState, formData: FormData): Promise
   if (account.status !== "active") return { error: "La cuenta está archivada: no admite trades nuevos." };
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return { error: "Elige un archivo." };
-  if (file.size > 12 * 1024 * 1024) return { error: "El archivo supera los 12 MB. Exporta un rango de fechas más corto." };
+  if (file.size > 3.9 * 1024 * 1024) return { error: "El archivo supera los 4 MB. Exporta un rango de fechas más corto." };
 
   let parsed;
   try {

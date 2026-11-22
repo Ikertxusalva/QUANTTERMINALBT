@@ -121,10 +121,18 @@ async function connect(): Promise<Runner> {
   const url = process.env.DATABASE_URL;
   if (url) {
     const { default: postgres } = await import("postgres");
-    const sql = postgres(url, { prepare: false, max: 5 });
-    await sql.unsafe(SCHEMA);
-    return async (text, params = []) =>
-      (await sql.unsafe(text, params as never[])) as unknown as Row[];
+    // prepare: false because Supabase's pooler (transaction mode) cannot keep prepared statements.
+    const max = Number(process.env.PG_POOL_MAX) || 3;
+    const sql = postgres(url, { prepare: false, max, idle_timeout: 20, onnotice: () => {} });
+    // Several statements in one go need the simple protocol.
+    await sql.unsafe(SCHEMA).simple();
+    return async (text, params = []) => {
+      // Callers pass JSON as text for "$n::jsonb". postgres.js would encode that text again
+      // and store a JSON string instead of the array or object, so hand it the parsed value.
+      const jsonb = new Set([...text.matchAll(/\$(\d+)::jsonb/g)].map((m) => Number(m[1]) - 1));
+      const values = params.map((v, i) => (jsonb.has(i) && typeof v === "string" ? JSON.parse(v) : v));
+      return (await sql.unsafe(text, values as never[])) as unknown as Row[];
+    };
   }
   const { PGlite } = await import("@electric-sql/pglite");
   const { mkdirSync } = await import("node:fs");
