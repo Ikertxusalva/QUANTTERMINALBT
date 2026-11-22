@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default function NewAccountPage() {
   return (
     <Shell active="/accounts">
-      <h1 className="mb-5 text-xl font-semibold tracking-tight">Nueva cuenta</h1>
+      <h1 className="h1 mb-6">Nueva cuenta</h1>
       <Wizard />
     </Shell>
   );

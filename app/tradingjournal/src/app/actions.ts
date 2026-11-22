@@ -3,17 +3,14 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { SESSION_COOKIE, authMode, isValidSession, sessionToken } from "@/lib/auth";
+import { SESSION_COOKIE, authMode, sessionToken } from "@/lib/auth";
+import { requireAuth } from "@/lib/guard";
 import { q } from "@/lib/db";
 import { parseMoney } from "@/lib/format";
 import { fromNyLocal, sessionDateOf } from "@/lib/rules/session.ts";
 import type { AccountRules, Market, Phase } from "@/lib/rules/types.ts";
 import { getAccount, type LedgerType } from "@/lib/data";
 
-async function requireAuth() {
-  const store = await cookies();
-  if (!(await isValidSession(store.get(SESSION_COOKIE)?.value))) redirect("/login");
-}
 
 // ------------------------------------------------------------------ access
 
@@ -147,10 +144,16 @@ export async function logTrade(_prev: string | null, formData: FormData): Promis
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(closed)) return "Indica la hora de cierre.";
   const closedAt = fromNyLocal(closed);
   if (closedAt.getTime() > Date.now() + 60_000) return "La hora de cierre está en el futuro.";
+  const opened = String(formData.get("opened_at") ?? "");
+  const openedAt = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(opened) ? fromNyLocal(opened) : null;
+  if (openedAt && openedAt > closedAt) return "La apertura no puede ser posterior al cierre.";
+  const swap = parseMoney(formData.get("swap")) ?? 0;
+  const strategyId = Number(formData.get("strategy_id")) || null;
 
   await q(
-    `insert into trades (account_id, symbol, side, qty, gross, fees, risk, closed_at, grade, note)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+    `insert into trades (account_id, symbol, side, qty, gross, fees, risk, closed_at, grade, note,
+                         opened_at, swap, strategy_id, session)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
     [
       accountId,
       symbol,
@@ -162,6 +165,10 @@ export async function logTrade(_prev: string | null, formData: FormData): Promis
       closedAt.toISOString(),
       String(formData.get("grade") ?? "") || null,
       String(formData.get("note") ?? "").trim() || null,
+      openedAt?.toISOString() ?? null,
+      swap,
+      strategyId,
+      String(formData.get("session") ?? "") || null,
     ],
   );
   revalidatePath("/", "layout");
@@ -172,6 +179,7 @@ export async function deleteTrade(formData: FormData) {
   await requireAuth();
   await q("delete from trades where id = $1", [Number(formData.get("id"))]);
   revalidatePath("/", "layout");
+  if (formData.get("back")) redirect("/journal");
 }
 
 // ------------------------------------------------------------------ ledger

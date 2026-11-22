@@ -21,7 +21,7 @@ export function LoginForm() {
           required
         />
       </div>
-      {error && <p className="text-down">{error}</p>}
+      {error && <p className="text-bad">{error}</p>}
       <button className="btn btn-primary w-full" disabled={pending}>
         {pending ? "Entrando…" : "Entrar"}
       </button>

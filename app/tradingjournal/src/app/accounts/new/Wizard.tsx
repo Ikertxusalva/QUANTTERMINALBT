@@ -560,7 +560,7 @@ export function Wizard() {
             </div>
           )}
 
-          {error && <p className="mt-4 text-down">{error}</p>}
+          {error && <p className="mt-4 text-bad">{error}</p>}
 
           <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
             {step === 0 ? (

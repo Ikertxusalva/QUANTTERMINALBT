@@ -1,33 +1,40 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0b0c0e;
-  --panel: #121417;
-  --raised: #191c20;
-  --line: rgb(255 255 255 / 0.08);
-  --line-2: rgb(255 255 255 / 0.16);
-  --tx: #eceef1;
-  --tx-2: #a4a9b1;
-  --tx-3: #737983;
-  --up: #6fcf97;
-  --down: #f0857a;
-  --warn: #e2b064;
-  --accent: #8fb4ff;
+  --bg: #050505;
+  --panel: #0d0d0d;
+  --raised: #141414;
+  --chip: #1a1a1a;
+  --line: rgb(255 255 255 / 0.07);
+  --line-2: rgb(255 255 255 / 0.18);
+  --tx: #ededed;
+  --tx-2: #a3a3a3;
+  --tx-3: #8a8a8a;
+  --tx-4: #525252;
+  /* Mono palette: a win is bright, a loss is faint. */
+  --up: #f4f4f4;
+  --down: #7a7a7a;
+  --warn: #d9a77a;
+  --bad: #d98b80;
+  --good: #a8d4b6;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-panel: var(--panel);
   --color-raised: var(--raised);
+  --color-chip: var(--chip);
   --color-line: var(--line);
   --color-line-2: var(--line-2);
   --color-tx: var(--tx);
   --color-tx-2: var(--tx-2);
   --color-tx-3: var(--tx-3);
+  --color-tx-4: var(--tx-4);
   --color-up: var(--up);
   --color-down: var(--down);
   --color-warn: var(--warn);
-  --color-accent: var(--accent);
+  --color-bad: var(--bad);
+  --color-good: var(--good);
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
@@ -44,43 +51,79 @@ body {
 }
 
 .num {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+}
+
+/* Small uppercase mono label above a figure. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tx-3);
+}
+
+.h1 {
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.hero {
+  font-size: clamp(44px, 8vw, 76px);
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.figure {
+  font-size: 26px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
 }
 
 .card {
   background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+}
+.well {
+  background: var(--raised);
   border: 1px solid var(--line);
   border-radius: 14px;
 }
 
 .label {
   display: block;
-  font-size: 12px;
-  color: var(--tx-3);
+  font-size: 12.5px;
+  color: var(--tx-2);
   margin-bottom: 6px;
 }
 
 .input {
   width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  background: var(--bg);
+  height: 40px;
+  padding: 0 14px;
+  background: #0f0f0f;
   color: var(--tx);
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  border-radius: 12px;
   outline: none;
 }
 textarea.input {
   height: auto;
-  padding: 8px 12px;
+  padding: 10px 14px;
+  line-height: 1.5;
 }
 .input:focus {
-  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.4);
 }
 .input::placeholder {
-  color: var(--tx-3);
+  color: var(--tx-4);
 }
 
 .btn {
@@ -89,8 +132,8 @@ textarea.input {
   justify-content: center;
   gap: 6px;
   height: 38px;
-  padding: 0 14px;
-  border-radius: 10px;
+  padding: 0 16px;
+  border-radius: 999px;
   border: 1px solid var(--line-2);
   background: transparent;
   color: var(--tx);
@@ -99,51 +142,189 @@ textarea.input {
   cursor: pointer;
 }
 .btn:hover {
-  background: var(--raised);
+  background: var(--chip);
 }
 .btn:disabled {
   opacity: 0.5;
   cursor: default;
 }
 .btn-primary {
-  background: var(--tx);
-  color: var(--bg);
-  border-color: var(--tx);
+  background: #f4f4f4;
+  color: #050505;
+  border-color: #f4f4f4;
+  box-shadow: inset 0 1px 0 #fff, 0 10px 24px -12px rgb(255 255 255 / 0.25);
 }
 .btn-primary:hover {
   background: #fff;
 }
 .btn-sm {
-  height: 30px;
-  padding: 0 10px;
+  height: 32px;
+  padding: 0 13px;
   font-size: 13px;
-  border-radius: 8px;
 }
 .btn-danger {
-  color: var(--down);
+  color: var(--bad);
+}
+
+/* Outlined pill: filters, tags, facts under a figure. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  color: var(--tx);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: transparent;
+  cursor: pointer;
+}
+.pill:hover {
+  background: var(--chip);
+}
+.pill-on,
+.pill-on:hover {
+  background: #f4f4f4;
+  color: #050505;
+  border-color: #f4f4f4;
+}
+.pill-static {
+  cursor: default;
+}
+.pill-static:hover {
+  background: transparent;
+}
+/* A radio or checkbox that looks like a pill. */
+.pill-check {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.pill-check:checked + .pill {
+  background: #f4f4f4;
+  color: #050505;
+  border-color: #f4f4f4;
+}
+.pill-check:focus-visible + .pill {
+  outline: 2px solid var(--tx-2);
+  outline-offset: 2px;
+}
+
+/* Segmented control. */
+.seg {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  max-width: 100%;
+  overflow-x: auto;
+}
+.seg a,
+.seg button {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--tx-3);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.seg a:hover {
+  color: var(--tx);
+}
+.seg .on,
+.seg .on:hover {
+  background: #f4f4f4;
+  color: #050505;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
   height: 22px;
-  padding: 0 8px;
+  padding: 0 9px;
   border-radius: 999px;
-  background: var(--raised);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-2);
   color: var(--tx-2);
-  font-size: 12px;
+  font-size: 11.5px;
   white-space: nowrap;
+}
+.chip-solid {
+  background: #f4f4f4;
+  color: #050505;
+  border-color: #f4f4f4;
+  font-weight: 600;
 }
 
 .bar {
-  height: 6px;
+  height: 8px;
   border-radius: 999px;
-  background: var(--raised);
+  background: var(--chip);
   overflow: hidden;
 }
 .bar > span {
   display: block;
   height: 100%;
   border-radius: 999px;
+}
+
+/* Floating navigation dock. */
+.dock {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgb(18 18 18 / 0.86);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 40px -12px rgb(0 0 0 / 0.9);
+  max-width: calc(100vw - 16px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dock a.nav {
+  height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  color: var(--tx-3);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dock a.nav:hover {
+  color: var(--tx);
+}
+.dock a.nav.on {
+  color: var(--tx);
+  background: var(--chip);
+}
+.dock select {
+  height: 34px;
+  max-width: 190px;
+  padding: 0 8px;
+  background: transparent;
+  color: var(--tx);
+  font-weight: 600;
+  border: 0;
+  outline: none;
+}
+.dock select option {
+  background: #141414;
+}
+
+table.t th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tx-3);
+  font-weight: 400;
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteAccount, deleteLedgerEntry, deleteTrade, setAccountStatus } from "@/app/actions";
 import { HEALTH_TONE } from "@/components/AccountCard";
@@ -23,9 +24,9 @@ function Tile({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="card p-4">
-      <div className="text-[12px] text-tx-3">{title}</div>
-      <div className={`num mt-1 text-xl font-semibold ${tone}`}>{value}</div>
+    <div className="card p-5">
+      <div className="eyebrow">{title}</div>
+      <div className={`figure mt-2 ${tone}`}>{value}</div>
       <div className="mt-2 space-y-1 text-[13px] text-tx-2">{children}</div>
     </div>
   );
@@ -56,8 +57,8 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
     <Shell active="/accounts">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{account.name}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-tx-3">
+          <h1 className="h1">{account.name}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-tx-3">
             <span>
               {account.kind === "personal"
                 ? "Cuenta personal"
@@ -102,11 +103,11 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
           <Tile
             title={`Margen hasta pérdida máxima · ${DRAWDOWN_LABEL[r.drawdownType ?? "static"]}`}
             value={`${s.drawdown.estimate ? "≤ " : ""}${money(Math.max(0, s.drawdown.headroom))}`}
-            tone={s.drawdown.breached ? "text-down" : s.drawdown.used >= 0.8 ? "text-warn" : ""}
+            tone={s.drawdown.breached ? "text-bad" : s.drawdown.used >= 0.8 ? "text-warn" : ""}
           >
             <Progress
               value={1 - s.drawdown.used}
-              color={s.drawdown.used >= 0.8 ? "var(--down)" : s.drawdown.used >= 0.5 ? "var(--warn)" : "var(--up)"}
+              color={s.drawdown.used >= 0.8 ? "var(--bad)" : s.drawdown.used >= 0.5 ? "var(--warn)" : "#f4f4f4"}
             />
             <div>
               Suelo{s.drawdown.locked ? " (bloqueado)" : ""}{" "}
@@ -122,9 +123,9 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
           <Tile
             title={`Pérdida diaria · ${sessionLabel}`}
             value={`${money(s.dailyLoss.left)} disponibles`}
-            tone={s.dailyLoss.hit ? "text-down" : ""}
+            tone={s.dailyLoss.hit ? "text-bad" : ""}
           >
-            <Progress value={s.dailyLoss.left / s.dailyLoss.limit} color={s.dailyLoss.hit ? "var(--down)" : "var(--up)"} />
+            <Progress value={s.dailyLoss.left / s.dailyLoss.limit} color={s.dailyLoss.hit ? "var(--bad)" : "#f4f4f4"} />
             <div>
               {s.dailyLoss.tradesThisSession === 0 ? (
                 "Sin trades en esta sesión"
@@ -146,9 +147,9 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
           <Tile
             title="Objetivo de beneficio"
             value={s.target.reached ? "Cumplido" : `${money(s.target.toGo)} restantes`}
-            tone={s.target.reached ? "text-up" : ""}
+            tone={s.target.reached ? "text-good" : ""}
           >
-            <Progress value={s.target.progress} color="var(--up)" />
+            <Progress value={s.target.progress} color="#f4f4f4" />
             <div>
               <span className="num">{money(s.target.profit)}</span> de{" "}
               <span className="num">{money(s.target.target, { whole: true })}</span>
@@ -200,9 +201,9 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
           <Tile
             title="Días para payout"
             value={`${s.payoutDays.atLeast ? "≥ " : ""}${s.payoutDays.counted} de ${s.payoutDays.required}`}
-            tone={s.payoutDays.met ? "text-up" : ""}
+            tone={s.payoutDays.met ? "text-good" : ""}
           >
-            <Progress value={s.payoutDays.counted / s.payoutDays.required} color="var(--up)" />
+            <Progress value={s.payoutDays.counted / s.payoutDays.required} color="#f4f4f4" />
             <div>
               {s.payoutDays.minProfitPerDay != null
                 ? `Cuentan los días de ${money(s.payoutDays.minProfitPerDay, { whole: true })} o más`
@@ -228,7 +229,7 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
 
       {!archived && (
         <section className="card mt-6 p-4">
-          <h2 className="mb-3 font-medium">Registrar trade</h2>
+          <div className="mb-3 flex items-center justify-between"><h2 className="text-[19px] font-bold tracking-tight">Registrar trade</h2><Link href="/import" className="btn btn-sm">Importar archivo</Link></div>
           <LogTradeForm
             accountId={account.id}
             symbols={instrumentsFor(account.market).map((i) => i.symbol)}
@@ -239,14 +240,14 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
       )}
 
       <section className="mt-6">
-        <h2 className="mb-3 font-medium">
+        <h2 className="mb-3 text-[19px] font-bold tracking-tight">
           Trades <span className="text-tx-3">· {trades.length}</span>
         </h2>
         {trades.length === 0 ? (
           <p className="text-tx-2">Esta cuenta aún no tiene trades.</p>
         ) : (
           <div className="card overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left">
+            <table className="t w-full min-w-[640px] text-left">
               <thead className="text-[12px] text-tx-3">
                 <tr className="border-b border-line">
                   <th className="px-4 py-2 font-normal">Instrumento</th>
@@ -265,7 +266,7 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
                   return (
                     <tr key={t.id}>
                       <td className="px-4 py-2 font-medium">
-                        {t.symbol}
+                        <Link href={`/trades/${t.id}`} className="hover:underline">{t.symbol}</Link>
                         {t.grade && <span className="chip ml-2">{t.grade}</span>}
                         {t.note && <div className="max-w-[220px] truncate text-[12px] font-normal text-tx-3">{t.note}</div>}
                       </td>
@@ -280,12 +281,12 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
                       </td>
                       <td className={`num px-2 py-2 text-right ${pnlClass(n)}`}>
                         {money(n, { sign: true })}
-                        {t.fees > 0 && <div className="text-[11px] text-tx-3">com. {money(t.fees)}</div>}
+                        {(t.fees !== 0 || t.swap !== 0) && <div className="text-[11px] text-tx-3">costes {money(t.fees - t.swap)}</div>}
                       </td>
                       <td className="px-4 py-2 text-right">
                         <form action={deleteTrade}>
                           <input type="hidden" name="id" value={t.id} />
-                          <button className="text-[12px] text-tx-3 hover:text-down" aria-label={`Borrar trade de ${t.symbol}`}>
+                          <button className="text-[12px] text-tx-3 hover:text-bad" aria-label={`Borrar trade de ${t.symbol}`}>
                             Borrar
                           </button>
                         </form>
@@ -301,7 +302,7 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
 
       {account.kind === "prop" && (
         <section className="mt-6">
-          <h2 className="mb-3 font-medium">Costes y payouts</h2>
+          <h2 className="mb-3 text-[19px] font-bold tracking-tight">Costes y payouts</h2>
           <div className="card p-4">
             <LedgerForm
               accountId={account.id}
@@ -328,7 +329,7 @@ export default async function AccountPage(props: PageProps<"/accounts/[id]">) {
                   </span>
                   <form action={deleteLedgerEntry}>
                     <input type="hidden" name="id" value={l.id} />
-                    <button className="text-[12px] text-tx-3 hover:text-down" aria-label="Borrar entrada">
+                    <button className="text-[12px] text-tx-3 hover:text-bad" aria-label="Borrar entrada">
                       Borrar
                     </button>
                   </form>

@@ -46,6 +46,75 @@ create table if not exists ledger (
   note text,
   created_at timestamptz not null default now()
 );
+alter table trades add column if not exists swap integer not null default 0;
+alter table trades add column if not exists external_id text;
+alter table trades add column if not exists import_id integer;
+alter table trades add column if not exists session text;
+alter table trades add column if not exists strategy_id integer;
+alter table trades add column if not exists plan_followed text;
+alter table trades add column if not exists feelings jsonb;
+alter table trades add column if not exists mistake text;
+alter table trades add column if not exists criteria_met jsonb;
+alter table trades add column if not exists rules_broken jsonb;
+alter table trades add column if not exists chart_url text;
+alter table trades add column if not exists entry_price double precision;
+alter table trades add column if not exists exit_price double precision;
+create unique index if not exists trades_external on trades(account_id, external_id) where external_id is not null;
+create table if not exists imports (
+  id serial primary key,
+  account_id integer not null references accounts(id) on delete cascade,
+  source text not null,
+  filename text,
+  trades integer not null default 0,
+  created_at timestamptz not null default now()
+);
+create table if not exists strategies (
+  id serial primary key,
+  name text not null,
+  description text,
+  criteria jsonb not null default '[]'::jsonb,
+  archived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create table if not exists rules (
+  id serial primary key,
+  name text not null,
+  archived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create table if not exists days (
+  date text primary key,
+  bias text,
+  instrument text,
+  levels text,
+  scenarios text,
+  plan text,
+  verdict text,
+  said text,
+  market_did text,
+  next_time text,
+  review text,
+  updated_at timestamptz not null default now()
+);
+create table if not exists notes (
+  id serial primary key,
+  title text not null,
+  body text not null default '',
+  folder text,
+  tags text,
+  pinned boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create table if not exists news_events (
+  id text primary key,
+  title text not null,
+  country text not null,
+  at timestamptz not null,
+  impact text not null,
+  forecast text,
+  previous text
+);
 `;
 
 async function connect(): Promise<Runner> {
